@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import { Grid, Form, Segment, Button, Header, Message, Icon } from 'semantic-ui-react';
+import md5 from 'md5';
 import firebase from '../../firebase.config';
 
 class Register extends Component {
@@ -10,6 +11,8 @@ class Register extends Component {
     password: '',
     passwordConfirmation: '',
     errors: [],
+    loading: false,
+    usersRef: firebase.database().ref('users'),
   };
 
   handleChange = (e) => {
@@ -17,21 +20,47 @@ class Register extends Component {
   };
 
   handleSubmit = (e) => {
+    e.preventDefault();
     if (this.isFormValid()) {
-      e.preventDefault();
-      const { email, password } = this.state;
+      this.setState({ errors: [], loading: true });
+
+      const { username, email, password, errors } = this.state;
 
       firebase
         .auth()
         .createUserWithEmailAndPassword(email, password)
-        .then((created) => {
-          console.log(created);
+        .then((createdUser) => {
+          console.log(createdUser);
+          createdUser.user
+            .updateProfile({
+              displayName: username,
+              photoURL: `http://gravatar.com/avatar/${md5(
+                createdUser.user.email,
+              )}?d=identicon`,
+            })
+            .then(() => {
+              this.saveUser(createdUser).then(() => {
+                console.log('user saved');
+              });
+            })
+            .catch((err) => {
+              console.error(err);
+              this.setState({ errors: errors.concat(err), loading: false });
+            });
         })
         .catch((err) => {
           console.error(err);
+          this.setState({ errors: errors.concat(err), loading: false });
         });
     }
   };
+
+  saveUser = (createdUser) => this.state.usersRef.child(createdUser.user.uid).set({
+      name: createdUser.user.displayName,
+      photoURL: createdUser.user.photoURL,
+    });
+
+  handleInputError = (errors, inputName) => (errors.some(err => err.message.toLowerCase().includes(inputName)) ? 'error' : '');
 
   isFormValid = () => {
     const errors = [];
@@ -67,12 +96,19 @@ class Register extends Component {
   dispalyErrors = (errors) => errors.map((error, i) => <p key={i}>{error.message}</p>);
 
   render() {
-    const { username, email, password, passwordConfirmation, errors } = this.state;
+    const {
+      username,
+      email,
+      password,
+      passwordConfirmation,
+      errors,
+      loading,
+    } = this.state;
 
     return (
       <Grid textAlign="center" verticalAlign="middle" className="app">
         <Grid.Column style={{ maxWidth: 450 }}>
-          <Header as="h2" icon color="orange" textAlign="center">
+          <Header as="h1" icon color="orange" textAlign="center">
             <Icon name="puzzle piece" color="orange" />
             Register for DevChat
           </Header>
@@ -97,6 +133,7 @@ class Register extends Component {
                 iconPosition="left"
                 placeholder="Email Address"
                 value={email}
+                className={this.handleInputError(errors, 'email')}
                 onChange={this.handleChange}
               />
 
@@ -108,6 +145,7 @@ class Register extends Component {
                 iconPosition="left"
                 placeholder="Password"
                 value={password}
+                className={this.handleInputError(errors, 'password')}
                 onChange={this.handleChange}
               />
 
@@ -119,10 +157,17 @@ class Register extends Component {
                 iconPosition="left"
                 placeholder="Password Confirmation"
                 value={passwordConfirmation}
+                className={this.handleInputError(errors, 'password')}
                 onChange={this.handleChange}
               />
 
-              <Button fluid color="orange" size="large">
+              <Button
+                disabled={loading}
+                className={loading ? 'loading' : ''}
+                fluid
+                color="orange"
+                size="large"
+              >
                 Submit
               </Button>
             </Segment>
@@ -135,7 +180,7 @@ class Register extends Component {
           )}
           <Message>
             Already a user?
-            <Link to="/login">Login</Link>
+            <Link to="/login"> Login</Link>
           </Message>
         </Grid.Column>
       </Grid>
