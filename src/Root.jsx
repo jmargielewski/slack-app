@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, withRouter } from 'react-router-dom';
+import firebase from 'firebase';
 
 // components
 import App from './components/App/App';
@@ -12,17 +13,33 @@ import * as serviceWorker from './serviceWorker';
 import './styles/style.css';
 import 'semantic-ui-css/semantic.min.css';
 
-const Root = () => (
-  <Router>
-    <Switch>
-      <Route exact path="/" component={App} />
-      <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
-    </Switch>
-  </Router>
-);
+class Root extends Component {
+  componentDidMount() {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        this.props.history.push('/');
+      }
+    });
+  }
 
-ReactDOM.render(<Root />, document.getElementById('root'));
+  render() {
+    return (
+      <Switch>
+        <Route exact path="/" component={App} />
+        <Route path="/login" component={Login} />
+        <Route path="/register" component={Register} />
+      </Switch>
+    );
+  }
+}
+const RootWithAuth = withRouter(Root);
+
+ReactDOM.render(
+  <Router>
+    <RootWithAuth />
+  </Router>,
+  document.getElementById('root'),
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
