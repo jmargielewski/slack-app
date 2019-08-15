@@ -5,7 +5,9 @@
     "max-len": [1, 130, 2, { "ignoreComments": true }],
     "import/no-unresolved": "off",
     "react/prop-types": 0,
-    "import/prefer-default-export": "off"
+    "import/prefer-default-export": "off",
+    "react/state-in-constructor": 0,
+    "object-curly-newline": 0
   },
   "extends": ["airbnb"],
   "globals": {

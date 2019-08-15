@@ -1,15 +1,74 @@
 import React, { Component } from 'react';
-import {
- Grid, Form, Segment, Button, Header, Message, Icon 
-} from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
+import { Grid, Form, Segment, Button, Header, Message, Icon } from 'semantic-ui-react';
+import firebase from '../../firebase';
 
 class Register extends Component {
-  state = {};
+  state = {
+    username: '',
+    email: '',
+    password: '',
+    passwordConfirmation: '',
+    errors: [],
+  };
 
-  handleChange = (e) => {};
+  handleChange = (e) => {
+    this.setState({ [e.target.name]: e.target.value });
+  };
+
+  handleSubmit = (e) => {
+    if (this.isFormValid()) {
+      e.preventDefault();
+      const { email, password } = this.state;
+
+      firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then((created) => {
+          console.log(created);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  };
+
+  isFormValid = () => {
+    const errors = [];
+    let error;
+
+    if (this.isFormEmpty(this.state)) {
+      error = { message: 'Fill in all fields' };
+      this.setState({ errors: errors.concat(error) });
+      return false;
+    }
+
+    if (!this.isPasswordValid(this.state)) {
+      error = { message: 'Password is invalid' };
+      this.setState({ errors: errors.concat(error) });
+      return false;
+    }
+
+    return true;
+  };
+
+  isFormEmpty = ({ username, email, password, passwordConfirmation }) => !username.length || !email.length || !password.length || !passwordConfirmation.length;
+
+  isPasswordValid = ({ password, passwordConfirmation }) => {
+    if (password.length < 6 || passwordConfirmation.length < 6) {
+      return false;
+    }
+    if (password !== passwordConfirmation) {
+      return false;
+    }
+    return true;
+  };
+
+  dispalyErrors = (errors) => errors.map((error, i) => <p key={i}>{error.message}</p>);
 
   render() {
+    const { username, email, password, passwordConfirmation, errors } = this.state;
+
     return (
       <Grid textAlign="center" verticalAlign="middle" className="app">
         <Grid.Column style={{ maxWidth: 450 }}>
@@ -17,7 +76,7 @@ class Register extends Component {
             <Icon name="puzzle piece" color="orange" />
             Register for DevChat
           </Header>
-          <Form size="large">
+          <Form onSubmit={this.handleSubmit} size="large">
             <Segment stacked>
               <Form.Input
                 fluid
@@ -26,7 +85,8 @@ class Register extends Component {
                 icon="user"
                 iconPosition="left"
                 placeholder="Username"
-                onChaneg={this.handleChange}
+                value={username}
+                onChange={this.handleChange}
               />
 
               <Form.Input
@@ -36,7 +96,8 @@ class Register extends Component {
                 icon="mail"
                 iconPosition="left"
                 placeholder="Email Address"
-                onChaneg={this.handleChange}
+                value={email}
+                onChange={this.handleChange}
               />
 
               <Form.Input
@@ -46,7 +107,8 @@ class Register extends Component {
                 icon="lock"
                 iconPosition="left"
                 placeholder="Password"
-                onChaneg={this.handleChange}
+                value={password}
+                onChange={this.handleChange}
               />
 
               <Form.Input
@@ -56,7 +118,8 @@ class Register extends Component {
                 icon="repeat"
                 iconPosition="left"
                 placeholder="Password Confirmation"
-                onChaneg={this.handleChange}
+                value={passwordConfirmation}
+                onChange={this.handleChange}
               />
 
               <Button fluid color="orange" size="large">
@@ -64,6 +127,12 @@ class Register extends Component {
               </Button>
             </Segment>
           </Form>
+          {errors.length > 0 && (
+            <Message error>
+              <h3>Error</h3>
+              {this.dispalyErrors(errors)}
+            </Message>
+          )}
           <Message>
             Already a user?
             <Link to="/login">Login</Link>
