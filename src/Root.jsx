@@ -9,6 +9,9 @@ import Register from './components/Auth/Register';
 
 import * as serviceWorker from './serviceWorker';
 
+import './styles/style.css';
+import 'semantic-ui-css/semantic.min.css';
+
 const Root = () => (
   <Router>
     <Switch>
