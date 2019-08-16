@@ -2,6 +2,11 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Route, Switch, withRouter } from 'react-router-dom';
 import firebase from 'firebase';
+import { compose, createStore } from 'redux';
+import { Provider, connect } from 'react-redux';
+
+import rootReducer from './reducers';
+import { setUser } from './actions';
 
 // components
 import App from './components/App/App';
@@ -13,10 +18,15 @@ import * as serviceWorker from './serviceWorker';
 import './styles/style.css';
 import 'semantic-ui-css/semantic.min.css';
 
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+const store = createStore(rootReducer, composeEnhancers());
+
 class Root extends Component {
   componentDidMount() {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
+        // console.log(user);
+        this.props.setUser(user);
         this.props.history.push('/');
       }
     });
@@ -32,12 +42,20 @@ class Root extends Component {
     );
   }
 }
-const RootWithAuth = withRouter(Root);
+
+const RootWithAuth = withRouter(
+  connect(
+    null,
+    { setUser },
+  )(Root),
+);
 
 ReactDOM.render(
-  <Router>
-    <RootWithAuth />
-  </Router>,
+  <Provider store={store}>
+    <Router>
+      <RootWithAuth />
+    </Router>
+  </Provider>,
   document.getElementById('root'),
 );
 
