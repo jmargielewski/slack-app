@@ -12,6 +12,7 @@ import { setUser } from './actions';
 import App from './components/App/App';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import Spinner from './components/Spinner/Spinner';
 
 import * as serviceWorker from './serviceWorker';
 
@@ -33,7 +34,9 @@ class Root extends Component {
   }
 
   render() {
-    return (
+    return this.props.isLoading ? (
+      <Spinner />
+    ) : (
       <Switch>
         <Route exact path="/" component={App} />
         <Route path="/login" component={Login} />
@@ -43,9 +46,13 @@ class Root extends Component {
   }
 }
 
+const mapStateToProps = (state) => ({
+  isLoading: state.user.isLoading,
+});
+
 const RootWithAuth = withRouter(
   connect(
-    null,
+    mapStateToProps,
     { setUser },
   )(Root),
 );
