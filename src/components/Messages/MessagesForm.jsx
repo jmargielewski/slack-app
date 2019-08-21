@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Segment, Button, Input } from 'semantic-ui-react';
+import FileModal from './FileModal';
 import firebase from '../../firebase.config';
 
 class MessagesForm extends Component {
@@ -9,6 +10,15 @@ class MessagesForm extends Component {
     user: this.props.currentUser,
     loading: false,
     errors: [],
+    modal: false,
+  };
+
+  openModal = () => {
+    this.setState({ modal: true });
+  };
+
+  closeModal = () => {
+    this.setState({ modal: false });
   };
 
   handleChange = (e) => {
@@ -55,8 +65,12 @@ class MessagesForm extends Component {
     }
   };
 
+  uploadFile = (file, metadata) => {
+    console.log(file, metadata);
+  };
+
   render() {
-    const { errors } = this.state;
+    const { errors, message, loading, modal } = this.state;
     return (
       <Segment className="messages__form">
         <Input
@@ -66,6 +80,7 @@ class MessagesForm extends Component {
             errors.some((error) => error.message.includes('message')) ? 'error' : ''
           }
           onChange={this.handleChange}
+          value={message}
           style={{ marginBottom: '.7em' }}
           label={<Button icon="add" />}
           labelPosition="left"
@@ -73,6 +88,7 @@ class MessagesForm extends Component {
         />
         <Button.Group icon widths="2">
           <Button
+            disabled={loading}
             onClick={this.sendMessage}
             color="orange"
             content="Add Reply"
@@ -80,10 +96,16 @@ class MessagesForm extends Component {
             icon="edit"
           />
           <Button
+            onClick={this.openModal}
             color="teal"
             content="Upload media"
             labelPosition="right"
             icon="cloud upload"
+          />
+          <FileModal
+            uploadFile={this.uploadFile}
+            closeModal={this.closeModal}
+            modal={modal}
           />
         </Button.Group>
       </Segment>
