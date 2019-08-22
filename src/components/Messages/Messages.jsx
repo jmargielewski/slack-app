@@ -14,6 +14,9 @@ class Messages extends Component {
     messagesLoading: true,
     progressBar: false,
     numUniqueUsers: '',
+    searchTerm: '',
+    searchLoading: false,
+    searchResults: [],
   };
 
   componentDidMount() {
@@ -23,6 +26,32 @@ class Messages extends Component {
       this.addListeners(channel.id);
     }
   }
+
+  handleSearchMessage = () => {
+    const channelMessages = [...this.state.messages];
+    const regex = new RegExp(this.state.searchTerm, 'gi');
+    const searchResults = channelMessages.reduce((acc, message) => {
+      if (
+        (message.content && message.content.match(regex))
+        || message.user.name.match(regex)
+      ) {
+        acc.push(message);
+      }
+      return acc;
+    }, []);
+
+    this.setState({ searchResults });
+  };
+
+  handleSearchChange = (e) => {
+    this.setState(
+      {
+        searchTerm: e.target.value,
+        searchLoading: true,
+      },
+      () => this.handleSearchMessage(),
+    );
+  };
 
   addListeners = (channelId) => {
     this.addMessageListener(channelId);
@@ -76,17 +105,22 @@ class Messages extends Component {
       user,
       progressBar,
       numUniqueUsers,
+      searchTerm,
+      searchResults,
     } = this.state;
     return (
       <>
         <MessagesHeader
           channelName={this.renderChannelName(channel)}
           numUniqueUsers={numUniqueUsers}
+          handleSearchChange={this.handleSearchChange}
         />
 
         <Segment>
           <Comment.Group className={progressBar ? 'messages__progress' : 'messages'}>
-            {this.renderMessages(messages)}
+            {searchTerm
+              ? this.renderMessages(searchResults)
+              : this.renderMessages(messages)}
           </Comment.Group>
         </Segment>
 
