@@ -41,6 +41,7 @@ class Messages extends Component {
     }, []);
 
     this.setState({ searchResults });
+    setTimeout(() => this.setState({ searchLoading: false }), 1000);
   };
 
   handleSearchChange = (e) => {
@@ -106,6 +107,7 @@ class Messages extends Component {
       progressBar,
       numUniqueUsers,
       searchTerm,
+      searchLoading,
       searchResults,
     } = this.state;
     return (
@@ -114,6 +116,7 @@ class Messages extends Component {
           channelName={this.renderChannelName(channel)}
           numUniqueUsers={numUniqueUsers}
           handleSearchChange={this.handleSearchChange}
+          searchLoading={searchLoading}
         />
 
         <Segment>
