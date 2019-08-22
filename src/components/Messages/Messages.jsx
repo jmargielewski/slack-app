@@ -12,6 +12,7 @@ class Messages extends Component {
     user: this.props.currentUser,
     messages: [],
     messagesLoading: true,
+    progressBar: false,
   };
 
   componentDidMount() {
@@ -44,14 +45,20 @@ class Messages extends Component {
       <Message key={message.timestamp} message={message} user={this.state.user} />
     ));
 
+  isProgressBarVisible = (percent) => {
+    if (percent > 0) {
+      this.setState({ progressBar: true });
+    }
+  };
+
   render() {
-    const { messagesRef, messages, channel, user } = this.state;
+    const { messagesRef, messages, channel, user, progressBar } = this.state;
     return (
       <>
         <MessagesHeader />
 
         <Segment>
-          <Comment.Group className="messages">
+          <Comment.Group className={progressBar ? 'messages__progress' : 'messages'}>
             {this.renderMessages(messages)}
           </Comment.Group>
         </Segment>
@@ -60,6 +67,7 @@ class Messages extends Component {
           messagesRef={messagesRef}
           currentChannel={channel}
           currentUser={user}
+          isProgressBarVisible={this.isProgressBarVisible}
         />
       </>
     );
