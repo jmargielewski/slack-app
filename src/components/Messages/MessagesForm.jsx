@@ -28,7 +28,7 @@ class MessagesForm extends Component {
     this.setState({ modal: false });
   };
 
-  handleChange = e => {
+  handleChange = (e) => {
     this.setState({ [e.target.name]: e.target.value });
   };
 
@@ -65,7 +65,7 @@ class MessagesForm extends Component {
         .then(() => {
           this.setState({ loading: false, message: '', errors: [] });
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(err);
           this.setState({
             loading: false,
@@ -92,14 +92,14 @@ class MessagesForm extends Component {
       () => {
         this.state.uploadTask.on(
           'state_changed',
-          snap => {
+          (snap) => {
             const percentUploaded = Math.round(
               (snap.bytesTransferred / snap.totalBytes) * 100,
             );
             this.props.isProgressBarVisible(percentUploaded);
             this.setState({ percentUploaded });
           },
-          err => {
+          (err) => {
             console.error(err);
 
             this.setState({
@@ -111,10 +111,10 @@ class MessagesForm extends Component {
           () => {
             this.state.uploadTask.snapshot.ref
               .getDownloadURL()
-              .then(downloadUrl => {
+              .then((downloadUrl) => {
                 this.sendFileMessage(downloadUrl, ref, pathToUpdate);
               })
-              .catch(err => {
+              .catch((err) => {
                 console.error(err);
 
                 this.setState({
@@ -139,11 +139,11 @@ class MessagesForm extends Component {
           uploadState: 'done',
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         this.setState({
           // prettier-ignore
-          errors: this.state.errors.concat(err)
+          errors: this.state.errors.concat(err),
         });
       });
   };
@@ -156,7 +156,7 @@ class MessagesForm extends Component {
           fluid
           name="message"
           className={
-            errors.some(error => error.message.includes('message')) ? 'error' : ''
+            errors.some((error) => error.message.includes('message')) ? 'error' : ''
           }
           onChange={this.handleChange}
           value={message}
@@ -176,6 +176,7 @@ class MessagesForm extends Component {
           />
           <Button
             onClick={this.openModal}
+            disabled={uploadState === 'uploading'}
             color="teal"
             content="Upload media"
             labelPosition="right"
