@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Menu, Icon } from 'semantic-ui-react';
-import { setCurrentChannel } from '../../actions';
+import { setCurrentChannel, setPrivateChannel } from '../../actions';
 import firebase from '../../firebase.config';
 
+/* eslint-disable react/destructuring-assignment */
 class DirectMessages extends Component {
   state = {
     user: this.props.currentUser,
@@ -80,6 +81,7 @@ class DirectMessages extends Component {
     };
 
     this.props.setCurrentChannel(channelData);
+    this.props.setPrivateChannel(true);
   };
 
   getChannelId = (userId) => {
@@ -116,8 +118,9 @@ class DirectMessages extends Component {
     );
   }
 }
+/* eslint-enable react/destructuring-assignment */
 
 export default connect(
   null,
-  { setCurrentChannel },
+  { setCurrentChannel, setPrivateChannel },
 )(DirectMessages);
