@@ -1,23 +1,29 @@
 import React, { Component } from 'react';
 import { Segment, Comment } from 'semantic-ui-react';
+import firebase from '../../firebase.config';
+
+// components
 import MessagesHeader from './MessagesHeader';
 import MessagesForm from './MessagesForm';
 import Message from './Message';
-import firebase from '../../firebase.config';
 
 class Messages extends Component {
+  /* eslint-disable react/destructuring-assignment */
   state = {
+    privateChannel: this.props.isPrivateChannel,
+    privateMessagesRef: firebase.database().ref('privateMessages'),
     messagesRef: firebase.database().ref('messages'),
-    channel: this.props.currentChannel,
-    user: this.props.currentUser,
     messages: [],
     messagesLoading: true,
+    channel: this.props.currentChannel,
+    user: this.props.currentUser,
     progressBar: false,
     numUniqueUsers: '',
     searchTerm: '',
     searchLoading: false,
     searchResults: [],
   };
+  /* eslint-disable react/destructuring-assignment */
 
   componentDidMount() {
     const { channel, user } = this.state;
@@ -59,10 +65,10 @@ class Messages extends Component {
   };
 
   addMessageListener = (channelId) => {
-    const { messagesRef } = this.state;
     const loadedMessages = [];
+    const ref = this.getMessagesRef();
 
-    messagesRef.child(channelId).on('child_added', (snap) => {
+    ref.child(channelId).on('child_added', (snap) => {
       loadedMessages.push(snap.val());
       this.setState({
         messages: loadedMessages,
@@ -70,6 +76,12 @@ class Messages extends Component {
       });
       this.countUniqueUsers(loadedMessages);
     });
+  };
+
+  getMessagesRef = () => {
+    const { messagesRef, privateMessagesRef, privateChannel } = this.state;
+
+    return privateChannel ? privateMessagesRef : messagesRef;
   };
 
   countUniqueUsers = (messages) => {
@@ -96,7 +108,9 @@ class Messages extends Component {
       <Message key={message.timestamp} message={message} user={this.state.user} />
     ));
 
-  renderChannelName = (channel) => (channel ? `#${channel.name}` : '');
+  // renderChannelName = (channel) => (channel ? `#${channel.name}` : '');
+
+  renderChannelName = (channel) => (channel ? `${this.state.privateChannel ? '@' : '#'}${channel.name}` : '');
 
   render() {
     const {
@@ -109,6 +123,7 @@ class Messages extends Component {
       searchTerm,
       searchLoading,
       searchResults,
+      privateChannel,
     } = this.state;
     return (
       <>
@@ -117,6 +132,7 @@ class Messages extends Component {
           numUniqueUsers={numUniqueUsers}
           handleSearchChange={this.handleSearchChange}
           searchLoading={searchLoading}
+          isPrivateChannel={privateChannel}
         />
 
         <Segment>
@@ -127,11 +143,14 @@ class Messages extends Component {
           </Comment.Group>
         </Segment>
 
+        {/* messagesRef is not use */}
         <MessagesForm
           messagesRef={messagesRef}
           currentChannel={channel}
           currentUser={user}
+          isPrivateChannel={privateChannel}
           isProgressBarVisible={this.isProgressBarVisible}
+          getMessagesRef={this.getMessagesRef}
         />
       </>
     );
