@@ -25,7 +25,7 @@ class Login extends Component {
         .auth()
         .signInWithEmailAndPassword(email, password)
         .then((signedUser) => {
-          console.log(signedUser);
+          // console.log(signedUser);
         })
         .catch((err) => {
           console.error(err);
