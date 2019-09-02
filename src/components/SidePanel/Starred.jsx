@@ -2,11 +2,51 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Menu, Icon } from 'semantic-ui-react';
 import { setCurrentChannel, setPrivateChannel } from '../../actions';
+import firebase from '../../firebase.config';
 
 class Starred extends Component {
+  /* eslint-disable react/destructuring-assignment */
   state = {
+    user: this.props.currentUser,
+    usersRef: firebase.database().ref('users'),
     activeChannel: '',
     starredChannels: [],
+  };
+  /* eslint-disable react/destructuring-assignment */
+
+  componentDidMount() {
+    if (this.state.user) {
+      this.addListeners(this.state.user.uid);
+    }
+  }
+
+  addListeners = (userId) => {
+    const { usersRef } = this.state;
+
+    usersRef
+      .child(userId)
+      .child('starred')
+      .on('child_added', (snap) => {
+        const starredChannel = { id: snap.key, ...snap.val() };
+
+        this.setState((prevState) => ({
+          starredChannels: [...prevState.starredChannels, starredChannel],
+        }));
+      });
+
+    usersRef
+      .child(userId)
+      .child('starred')
+      .on('child_removed', (snap) => {
+        const channelToRemove = { id: snap.key, ...snap.val() };
+        /* eslint-disable react/no-access-state-in-setstate */
+        const filteredChannels = this.state.starredChannels.filter(
+          (channel) => channel.id !== channelToRemove.id,
+        );
+        /* eslint-disable react/no-access-state-in-setstate */
+
+        this.setState({ starredChannels: filteredChannels });
+      });
   };
 
   setActiveChannel = (channel) => {
