@@ -16,7 +16,9 @@ class Messages extends Component {
     messages: [],
     messagesLoading: true,
     channel: this.props.currentChannel,
+    isChannelStared: false,
     user: this.props.currentUser,
+    usersRef: firebase.database().ref('users'),
     progressBar: false,
     numUniqueUsers: '',
     searchTerm: '',
@@ -58,6 +60,39 @@ class Messages extends Component {
       },
       () => this.handleSearchMessage(),
     );
+  };
+
+  handlerStar = () => {
+    this.setState(
+      (prevState) => ({
+        isChannelStared: !prevState.isChannelStared,
+      }),
+      () => this.starChannel(),
+    );
+  };
+
+  starChannel = () => {
+    if (this.state.isChannelStared) {
+      this.state.usersRef.child(`${this.state.user.uid}/starred`).update({
+        [this.state.channel.id]: {
+          name: this.state.channel.name,
+          details: this.state.channel.details,
+          createdBy: {
+            name: this.state.channel.createdBy.name,
+            avatar: this.state.channel.createdBy.avatar,
+          },
+        },
+      });
+    } else {
+      this.state.usersRef
+        .child(`${this.state.user.uid}/starred`)
+        .child(this.state.channel.id)
+        .remove((err) => {
+          if (err !== null) {
+            console.error(err);
+          }
+        });
+    }
   };
 
   addListeners = (channelId) => {
@@ -108,8 +143,6 @@ class Messages extends Component {
       <Message key={message.timestamp} message={message} user={this.state.user} />
     ));
 
-  // renderChannelName = (channel) => (channel ? `#${channel.name}` : '');
-
   renderChannelName = (channel) => (channel ? `${this.state.privateChannel ? '@' : '#'}${channel.name}` : '');
 
   render() {
@@ -124,6 +157,7 @@ class Messages extends Component {
       searchLoading,
       searchResults,
       privateChannel,
+      isChannelStared,
     } = this.state;
     return (
       <>
@@ -133,6 +167,8 @@ class Messages extends Component {
           handleSearchChange={this.handleSearchChange}
           searchLoading={searchLoading}
           isPrivateChannel={privateChannel}
+          handlerStar={this.handlerStar}
+          isChannelStared={isChannelStared}
         />
 
         <Segment>
