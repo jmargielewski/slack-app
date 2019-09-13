@@ -37,6 +37,7 @@ class UserPanel extends Component {
 
   render() {
     const { user } = this.state;
+    const { primaryColor } = this.props;
 
     const dropdownTrigger = (
       <span>
@@ -45,7 +46,7 @@ class UserPanel extends Component {
       </span>
     );
     return (
-      <Grid style={{ background: '#4c3c4c' }}>
+      <Grid style={{ background: primaryColor }}>
         <Grid.Column>
           <Grid.Row style={{ padding: '1.2em' }}>
             <Header inverted floated="left" as="h2">

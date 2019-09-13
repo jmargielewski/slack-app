@@ -16,7 +16,7 @@ class MessagesHeader extends Component {
     } = this.props;
     return (
       <Segment clearing>
-        <Header fluid as="h2" floated="left" style={{ marginBottom: 0 }}>
+        <Header as="h2" floated="left" style={{ marginBottom: 0 }}>
           <span>
             {channelName}
             {!isPrivateChannel && (
