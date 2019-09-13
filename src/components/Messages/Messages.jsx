@@ -8,6 +8,7 @@ import { setUserPosts } from '../../actions';
 import MessagesHeader from './MessagesHeader';
 import MessagesForm from './MessagesForm';
 import Message from './Message';
+import Typing from './Typing';
 
 class Messages extends Component {
   /* eslint-disable react/destructuring-assignment */
@@ -210,6 +211,10 @@ class Messages extends Component {
             {searchTerm
               ? this.renderMessages(searchResults)
               : this.renderMessages(messages)}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <span className="user__typing">kuba is typing </span>
+              <Typing />
+            </div>
           </Comment.Group>
         </Segment>
 
