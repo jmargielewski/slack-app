@@ -27,6 +27,9 @@ class Messages extends Component {
     searchTerm: '',
     searchLoading: false,
     searchResults: [],
+    typingRef: firebase.database().ref('typing'),
+    typingUsers: [],
+    connectedRef: firebase.database().ref('.info/connected'),
   };
   /* eslint-disable react/destructuring-assignment */
 
@@ -101,6 +104,45 @@ class Messages extends Component {
 
   addListeners = (channelId) => {
     this.addMessageListener(channelId);
+    this.addTypingListener(channelId);
+  };
+
+  addTypingListener = (channelId) => {
+    let typingUsers = [];
+
+    this.state.typingRef.child(channelId).on('child_added', (snap) => {
+      if (snap.key !== this.state.user.uid) {
+        typingUsers = typingUsers.concat({
+          id: snap.key,
+          name: snap.val(),
+        });
+
+        this.setState({ typingUsers });
+      }
+    });
+
+    this.state.typingRef.child(channelId).on('child_removed', (snap) => {
+      const index = typingUsers.findIndex((user) => user.id === snap.key);
+
+      if (index !== -1) {
+        typingUsers = typingUsers.filter((user) => user.id !== snap.key);
+        this.setState({ typingUsers });
+      }
+    });
+
+    this.state.connectedRef.on('value', (snap) => {
+      if (snap.val() === true) {
+        this.state.typingRef
+          .child(channelId)
+          .child(this.state.user.uid)
+          .onDisconnect()
+          .remove((err) => {
+            if (err !== null) {
+              console.error(err);
+            }
+          });
+      }
+    });
   };
 
   addMessageListener = (channelId) => {
@@ -178,6 +220,20 @@ class Messages extends Component {
       <Message key={message.timestamp} message={message} user={this.state.user} />
     ));
 
+  renderTypingUsers = (users) => users.length > 0
+    && users.map((user) => (
+      <div
+        key={user.id}
+        style={{ display: 'flex', alignItems: 'center', marginBottom: '0.2em' }}
+      >
+        <span className="user__typing">
+          {user.name}
+          is typing
+        </span>
+        <Typing />
+      </div>
+    ));
+
   renderChannelName = (channel) => (channel ? `${this.state.privateChannel ? '@' : '#'}${channel.name}` : '');
 
   render() {
@@ -193,6 +249,7 @@ class Messages extends Component {
       searchResults,
       privateChannel,
       isChannelStared,
+      typingUsers,
     } = this.state;
     return (
       <>
@@ -211,10 +268,7 @@ class Messages extends Component {
             {searchTerm
               ? this.renderMessages(searchResults)
               : this.renderMessages(messages)}
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span className="user__typing">kuba is typing </span>
-              <Typing />
-            </div>
+            {this.renderTypingUsers(typingUsers)}
           </Comment.Group>
         </Segment>
 
