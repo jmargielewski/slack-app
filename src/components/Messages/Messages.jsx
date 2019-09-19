@@ -42,6 +42,16 @@ class Messages extends Component {
     }
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if (this.messagesEnd) {
+      this.scrollToBottom();
+    }
+  }
+
+  scrollToBottom = () => {
+    this.messagesEnd.scrollIntoView({ behaviour: 'smooth' });
+  };
+
   handleSearchMessage = () => {
     const channelMessages = [...this.state.messages];
     const regex = new RegExp(this.state.searchTerm, 'gi');
@@ -269,6 +279,7 @@ class Messages extends Component {
               ? this.renderMessages(searchResults)
               : this.renderMessages(messages)}
             {this.renderTypingUsers(typingUsers)}
+            <div ref={(node) => (this.messagesEnd = node)} />
           </Comment.Group>
         </Segment>
 
