@@ -9,6 +9,7 @@ import MessagesHeader from './MessagesHeader';
 import MessagesForm from './MessagesForm';
 import Message from './Message';
 import Typing from './Typing';
+import Skeleton from './Skeleton';
 
 class Messages extends Component {
   /* eslint-disable react/destructuring-assignment */
@@ -246,6 +247,14 @@ class Messages extends Component {
 
   renderChannelName = (channel) => (channel ? `${this.state.privateChannel ? '@' : '#'}${channel.name}` : '');
 
+  renderMessageSkeleton = (loading) => (loading ? (
+      <>
+        {[...Array(10)].map((_, i) => (
+          <Skeleton key={i} />
+        ))}
+      </>
+    ) : null);
+
   render() {
     const {
       messagesRef,
@@ -260,6 +269,7 @@ class Messages extends Component {
       privateChannel,
       isChannelStared,
       typingUsers,
+      messagesLoading,
     } = this.state;
     return (
       <>
@@ -275,6 +285,7 @@ class Messages extends Component {
 
         <Segment>
           <Comment.Group className={progressBar ? 'messages__progress' : 'messages'}>
+            {this.renderMessageSkeleton(messagesLoading)}
             {searchTerm
               ? this.renderMessages(searchResults)
               : this.renderMessages(messages)}
