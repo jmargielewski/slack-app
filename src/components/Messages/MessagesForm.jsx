@@ -1,6 +1,9 @@
 import React, { Component } from 'react';
 import uuidv4 from 'uuid/v4';
 import { Segment, Button, Input } from 'semantic-ui-react';
+import { Picker, emojiIndex } from 'emoji-mart';
+import 'emoji-mart/css/emoji-mart.css';
+
 import firebase from '../../firebase.config';
 
 import FileModal from './FileModal';
@@ -19,6 +22,7 @@ class MessagesForm extends Component {
     loading: false,
     errors: [],
     modal: false,
+    emojiPicker: false,
   };
 
   openModal = () => {
@@ -48,6 +52,31 @@ class MessagesForm extends Component {
         .remove();
     }
   };
+
+  handleTogglePicker = () => {
+    this.setState({ emojiPicker: !this.state.emojiPicker });
+  };
+
+  handleAddEmoji = (emoji) => {
+    const oldMessage = this.state.message;
+    const newMessage = this.colonToUnicode(`${oldMessage} ${emoji.colons}`);
+
+    this.setState({ message: newMessage, emojiPicker: false });
+    setTimeout(() => this.messageInputRef.focus(), 0);
+  };
+
+  colonToUnicode = (message) => message.replace(/:[A-Za-z0-9_+-]+:/g, (x) => {
+      x = x.replace(/:/g, '');
+      const emoji = emojiIndex.emojis[x];
+      if (typeof emoji !== 'undefined') {
+        const unicode = emoji.native;
+        if (typeof unicode !== 'undefined') {
+          return unicode;
+        }
+      }
+      x = `:${x}:`;
+      return x;
+    });
 
   createMessage = (fileUrl = null) => {
     const message = {
@@ -177,9 +206,26 @@ class MessagesForm extends Component {
   };
 
   render() {
-    const { errors, message, loading, modal, uploadState, percentUploaded } = this.state;
+    const {
+      errors,
+      message,
+      loading,
+      modal,
+      uploadState,
+      percentUploaded,
+      emojiPicker,
+    } = this.state;
     return (
       <Segment className="messages__form">
+        {emojiPicker && (
+          <Picker
+            set="apple"
+            onSelect={this.handleAddEmoji}
+            className="emojipicker"
+            title="Pick your emoji"
+            emoji="point_up"
+          />
+        )}
         <Input
           fluid
           name="message"
@@ -189,8 +235,15 @@ class MessagesForm extends Component {
           onKeyDown={this.handleKeyDown}
           onChange={this.handleChange}
           value={message}
+          ref={(node) => (this.messageInputRef = node)}
           style={{ marginBottom: '.7em' }}
-          label={<Button icon="add" />}
+          label={(
+<Button
+              icon={emojiPicker ? 'close' : 'add'}
+              content={emojiPicker ? 'Close' : null}
+              onClick={this.handleTogglePicker}
+            />
+)}
           labelPosition="left"
           placeholder="Write your message"
         />
